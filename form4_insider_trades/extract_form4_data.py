@@ -102,13 +102,18 @@ def get_form4_urls_for_date(date, allowed_ciks=None):
 
     return form4_urls
 
+import re
+
 def extract_form4_data(xml_string):
     """Parses Form 4 XML and extracts matching transactions."""
     results = []
     try:
+        # Strip XML namespaces using regex to avoid ElementTree namespace issues.
+        # This removes xmlns="..." or xmlns:foo="..." from all tags.
+        xml_string = re.sub(r'\s+xmlns(:\w+)?="[^"]+"', '', xml_string)
+
         root = ET.fromstring(xml_string)
 
-        # XML namespace handling is tricky. EDGAR forms usually don't have default NS, but just in case
         def get_text(element, path):
             node = element.find(path)
             return node.text.strip() if node is not None and node.text else None
