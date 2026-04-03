@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 # Constants
 SEC_USER_AGENT = "Sp500KeywordExtractor/1.0 (placeholder@example.com)"
 SEC_RATE_LIMIT_DELAY = 0.15  # SEC allows 10 requests per second
+SEC_REQUEST_TIMEOUT = 10  # Seconds
 WIKIPEDIA_SP500_URL = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 SEC_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
 
@@ -48,7 +49,7 @@ def get_sec_ticker_to_cik_mapping() -> Dict[str, str]:
     logger.info("Fetching SEC ticker to CIK mapping...")
     headers = {"User-Agent": SEC_USER_AGENT}
     try:
-        response = requests.get(SEC_TICKERS_URL, headers=headers)
+        response = requests.get(SEC_TICKERS_URL, headers=headers, timeout=SEC_REQUEST_TIMEOUT)
         response.raise_for_status()
         time.sleep(SEC_RATE_LIMIT_DELAY)
 
@@ -71,7 +72,7 @@ def fetch_recent_filings(cik: str) -> List[Dict]:
     submissions_url = f"https://data.sec.gov/submissions/CIK{cik}.json"
 
     try:
-        response = requests.get(submissions_url, headers=headers)
+        response = requests.get(submissions_url, headers=headers, timeout=SEC_REQUEST_TIMEOUT)
         response.raise_for_status()
         time.sleep(SEC_RATE_LIMIT_DELAY)
 
@@ -129,7 +130,7 @@ def download_and_parse_filing(cik: str, filing_info: Dict) -> str:
 
     headers = {"User-Agent": SEC_USER_AGENT}
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=SEC_REQUEST_TIMEOUT)
         response.raise_for_status()
         time.sleep(SEC_RATE_LIMIT_DELAY)
 
