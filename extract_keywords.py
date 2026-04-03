@@ -26,6 +26,9 @@ SEC_RATE_LIMIT_DELAY = 0.15  # SEC allows 10 requests per second
 WIKIPEDIA_SP500_URL = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 SEC_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
 
+# Regex patterns
+WHITESPACE_PATTERN = re.compile(r'\s+')
+
 def fetch_sp500_tickers() -> List[str]:
     """Fetches the list of S&P 500 tickers from Wikipedia."""
     logger.info("Fetching S&P 500 list from Wikipedia...")
@@ -141,7 +144,7 @@ def download_and_parse_filing(cik: str, filing_info: Dict) -> str:
 
         text = soup.get_text(separator=' ', strip=True)
         # Collapse multiple spaces
-        text = re.sub(r'\s+', ' ', text)
+        text = WHITESPACE_PATTERN.sub(' ', text)
 
         logger.info(f"Successfully downloaded and extracted {len(text)} characters.")
         return text
