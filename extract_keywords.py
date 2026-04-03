@@ -30,6 +30,11 @@ SEC_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
 # Regex patterns
 WHITESPACE_PATTERN = re.compile(r'\s+')
 
+# Initialize a global session for connection pooling
+# This significantly improves performance when making multiple requests to the SEC
+sec_session = requests.Session()
+sec_session.headers.update({"User-Agent": SEC_USER_AGENT})
+
 def fetch_sp500_tickers() -> List[str]:
     """Fetches the list of S&P 500 tickers from Wikipedia."""
     logger.info("Fetching S&P 500 list from Wikipedia...")
@@ -50,9 +55,8 @@ def fetch_sp500_tickers() -> List[str]:
 def get_sec_ticker_to_cik_mapping() -> Dict[str, str]:
     """Fetches the SEC mapping of tickers to CIKs."""
     logger.info("Fetching SEC ticker to CIK mapping...")
-    headers = {"User-Agent": SEC_USER_AGENT}
     try:
-        response = requests.get(SEC_TICKERS_URL, headers=headers, timeout=SEC_REQUEST_TIMEOUT)
+        response = sec_session.get(SEC_TICKERS_URL, timeout=SEC_REQUEST_TIMEOUT)
         response.raise_for_status()
         time.sleep(SEC_RATE_LIMIT_DELAY)
 
@@ -71,11 +75,10 @@ def get_sec_ticker_to_cik_mapping() -> Dict[str, str]:
 def fetch_recent_filings(cik: str) -> List[Dict]:
     """Fetches the metadata for the most recent 10-K and up to 3 10-Qs for a given CIK."""
     logger.info(f"Fetching filing history for CIK {cik}...")
-    headers = {"User-Agent": SEC_USER_AGENT}
     submissions_url = f"https://data.sec.gov/submissions/CIK{cik}.json"
 
     try:
-        response = requests.get(submissions_url, headers=headers, timeout=SEC_REQUEST_TIMEOUT)
+        response = sec_session.get(submissions_url, timeout=SEC_REQUEST_TIMEOUT)
         response.raise_for_status()
         time.sleep(SEC_RATE_LIMIT_DELAY)
 
@@ -131,9 +134,8 @@ def download_and_parse_filing(cik: str, filing_info: Dict) -> str:
     url = f"https://www.sec.gov/Archives/edgar/data/{cik.lstrip('0')}/{accession_no}/{doc_name}"
     logger.info(f"Downloading {filing_info['form']} from {url}...")
 
-    headers = {"User-Agent": SEC_USER_AGENT}
     try:
-        response = requests.get(url, headers=headers, timeout=SEC_REQUEST_TIMEOUT)
+        response = sec_session.get(url, timeout=SEC_REQUEST_TIMEOUT)
         response.raise_for_status()
         time.sleep(SEC_RATE_LIMIT_DELAY)
 
