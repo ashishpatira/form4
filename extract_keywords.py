@@ -11,6 +11,10 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

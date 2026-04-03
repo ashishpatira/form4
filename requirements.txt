@@ -1,0 +1,7 @@
+requests
+beautifulsoup4
+lxml
+google-generativeai
+pandas
+html5lib
+python-dotenv
