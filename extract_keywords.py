@@ -172,7 +172,7 @@ def extract_keywords_with_gemini(ticker: str, all_text: str) -> List[str]:
     Please provide ONLY a JSON list of strings containing exactly 10 keywords. Do not provide any other text, explanation, or markdown formatting outside of the JSON array.
 
     Text:
-    {all_text[:3000000]} # Limit text length to avoid extreme cases, though 1.5-flash handles 1M+ tokens
+    {all_text}
     """
 
     try:
