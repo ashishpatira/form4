@@ -50,6 +50,37 @@ def get_date_range(start_date_str=None, end_date_str=None):
 def get_quarter(date):
     return (date.month - 1) // 3 + 1
 
+# Cache available dates per (year, quarter) to avoid redundant network calls
+_available_dates_cache = {}
+
+def get_available_index_dates(year, quarter):
+    """Fetches the index.json for a given year and quarter to find available master idx dates."""
+    cache_key = (year, quarter)
+    if cache_key in _available_dates_cache:
+        return _available_dates_cache[cache_key]
+
+    url = f"https://www.sec.gov/Archives/edgar/daily-index/{year}/QTR{quarter}/index.json"
+    logging.info(f"Fetching available daily indices from {url}")
+    available_dates = set()
+    try:
+        response = session.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        items = data.get('directory', {}).get('item', [])
+        for item in items:
+            name = item.get('name', '')
+            # Match master.YYYYMMDD.idx
+            if name.startswith('master.') and name.endswith('.idx'):
+                date_part = name[len('master.'):-len('.idx')]
+                available_dates.add(date_part)
+    except Exception as e:
+        logging.warning(f"Could not fetch index.json for {year} QTR{quarter}: {e}. Will attempt to fetch daily idx blindly.")
+        # Return a special flag or just empty so it knows it failed and can fallback
+        return None
+
+    _available_dates_cache[cache_key] = available_dates
+    return available_dates
+
 def fetch_company_tickers():
     """Fetches SEC company tickers to map Ticker -> CIK for filtering."""
     url = "https://www.sec.gov/files/company_tickers.json"
@@ -75,6 +106,12 @@ def get_form4_urls_for_date(date, allowed_ciks=None):
     date_str = date.strftime("%Y%m%d")
     year = date.year
     quarter = get_quarter(date)
+
+    available_dates = get_available_index_dates(year, quarter)
+    if available_dates is not None and date_str not in available_dates:
+        logging.info(f"Skipping {date_str} as no daily index is published for this date (e.g., weekend/holiday).")
+        return []
+
     url = DAILY_INDEX_URL.format(year=year, quarter=quarter, date=date_str)
 
     logging.info(f"Fetching daily index for {date_str} from {url}")
