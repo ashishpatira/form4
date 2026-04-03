@@ -171,13 +171,18 @@ def extract_form4_data(xml_string):
             if updated_ownership_value > 0:
                 transaction_ratio_pct = (transaction_amount / updated_ownership_value) * 100
 
+            # Apply formatting requirements
+            transaction_amount_rounded = round(transaction_amount)
+            updated_ownership_value_rounded = round(updated_ownership_value)
+            transaction_ratio_pct_rounded = round(transaction_ratio_pct, 1)
+
             results.append({
                 "ticker": issuer_symbol,
                 "transaction_date": tx_date,
-                "transaction_amount": transaction_amount,
-                "updated_ownership_value": updated_ownership_value,
+                "transaction_amount": transaction_amount_rounded,
+                "updated_ownership_value": updated_ownership_value_rounded,
                 "type": tx_type,
-                "transaction_ratio_pct": transaction_ratio_pct
+                "transaction_ratio_pct": transaction_ratio_pct_rounded
             })
 
     except ET.ParseError as e:
