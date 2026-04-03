@@ -124,10 +124,8 @@ def extract_form4_data(xml_string):
 
         # Process Table 1 (nonDerivativeTable)
         for tx in root.findall(".//nonDerivativeTransaction"):
-            # Check security title
-            title = get_text(tx, ".//securityTitle/value")
-            if not title or "common stock" not in title.lower():
-                continue
+            # We no longer filter by security title (e.g., "common stock")
+            # to accommodate "Capital Stock" or other variations.
 
             # Check transaction code
             tx_code = get_text(tx, ".//transactionCoding/transactionCode")

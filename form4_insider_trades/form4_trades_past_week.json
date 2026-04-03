@@ -8,20 +8,20 @@
         "transaction_ratio_pct": 9.7
     },
     {
-        "ticker": "TPL",
-        "transaction_date": "2026-03-31",
-        "transaction_amount": 470,
-        "updated_ownership_value": 1630554619,
-        "type": "Acquired",
-        "transaction_ratio_pct": 0.0
-    },
-    {
         "ticker": "FGBI",
         "transaction_date": "2026-03-31",
         "transaction_amount": 1072905,
         "updated_ownership_value": 5247462,
         "type": "Acquired",
         "transaction_ratio_pct": 20.4
+    },
+    {
+        "ticker": "TPL",
+        "transaction_date": "2026-03-31",
+        "transaction_amount": 470,
+        "updated_ownership_value": 1630554619,
+        "type": "Acquired",
+        "transaction_ratio_pct": 0.0
     },
     {
         "ticker": "FGBI",

@@ -1,12 +1,12 @@
 # SEC Form 4 Insider Trades Extractor
 
-This tool efficiently downloads and extracts specific insider trading information from SEC Form 4 filings. It focuses on identifying **Open Market or Private Purchases** (Transaction Code `P`) of **Common Stock**.
+This tool efficiently downloads and extracts specific insider trading information from SEC Form 4 filings. It focuses on identifying **Open Market or Private Purchases** (Transaction Code `P`).
 
 ## Features
 
 - **Efficient Fetching:** Uses the SEC's daily EDGAR index to locate Form 4 documents quickly.
 - **Concurrent Processing:** Employs thread pooling to download and parse multiple documents simultaneously while strictly adhering to SEC API rate limits (max 10 requests/second).
-- **Targeted Extraction:** Parses the internal `<XML>` structures of the filings to extract Table 1 ("nonDerivativeTransaction") details, specifically focusing on Common Stock and Code "P" transactions.
+- **Targeted Extraction:** Parses the internal `<XML>` structures of the filings to extract Table 1 ("nonDerivativeTransaction") details, specifically focusing on Code "P" transactions (regardless of security title variations like Common Stock or Capital Stock).
 - **Custom Metrics:** Calculates specialized metrics like `transaction_amount`, `updated_ownership_value` (using transaction price to estimate value), and `transaction_ratio_pct`.
 - **Filtering:** Optionally filter filings by specific stock tickers and custom date ranges.
 
