@@ -14,7 +14,7 @@ from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+load_dotenv(override=True)
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -165,7 +165,7 @@ def extract_keywords_with_gemini(ticker: str, all_text: str) -> List[str]:
     genai.configure(api_key=api_key)
 
     # We use a large context model
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.0-flash')
 
     prompt = f"""
     You are an expert financial analyst. I am providing you with the text from recent SEC public filings (10-K and 10-Q) for the company with ticker '{ticker}'.
