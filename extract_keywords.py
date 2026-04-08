@@ -4,7 +4,7 @@ import logging
 import os
 import re
 import time
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 import requests
 from bs4 import BeautifulSoup
@@ -34,6 +34,9 @@ WHITESPACE_PATTERN = re.compile(r'\s+')
 # This significantly improves performance when making multiple requests to the SEC
 sec_session = requests.Session()
 sec_session.headers.update({"User-Agent": SEC_USER_AGENT})
+
+# We use a large context model
+model = genai.GenerativeModel('gemini-3.0-flash')
 
 def fetch_sp500_tickers() -> List[str]:
     """Fetches the list of S&P 500 tickers from Wikipedia."""
@@ -159,16 +162,6 @@ def extract_keywords_with_gemini(ticker: str, all_text: str) -> List[str]:
     """Uses Gemini to extract 10 unique business keywords from the provided text."""
     logger.info(f"Sending text to Gemini for ticker {ticker}...")
 
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        logger.error("GEMINI_API_KEY environment variable not set.")
-        return []
-
-    genai.configure(api_key=api_key)
-
-    # We use a large context model
-    model = genai.GenerativeModel('gemini-2.0-flash')
-
     prompt = f"""
     You are an expert financial analyst. I am providing you with the text from recent SEC public filings (10-K and 10-Q) for the company with ticker '{ticker}'.
 
@@ -223,9 +216,12 @@ def main():
     parser.add_argument("--test", action="store_true", help="Run in test mode (only processes the first company in the batch).")
     args = parser.parse_args()
 
-    if not os.environ.get("GEMINI_API_KEY"):
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
         logger.error("Please set the GEMINI_API_KEY environment variable.")
         return
+
+    genai.configure(api_key=api_key)
 
     tickers = fetch_sp500_tickers()
     if not tickers:
