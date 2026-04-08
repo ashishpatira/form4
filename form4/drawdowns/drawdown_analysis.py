@@ -94,9 +94,26 @@ def analyze_drawdown_probabilities(df):
     return results
 
 if __name__ == "__main__":
+    import argparse
     from tabulate import tabulate
 
-    prices = simulate_timeseries()
+    parser = argparse.ArgumentParser(description="Simulate a timeseries and analyze drawdown probabilities.")
+    parser.add_argument("--days", type=int, default=5000, help="Number of days to simulate (default: 5000).")
+    parser.add_argument("--initial-price", type=float, default=100.0, help="Initial price on day 0 (default: 100.0).")
+    parser.add_argument("--drift", type=float, default=1.0, help="Average upward daily drift (default: 1.0).")
+    parser.add_argument("--volatility", type=float, default=0.20, help="Annualized volatility (default: 0.20).")
+
+    args = parser.parse_args()
+
+    print(f"Running simulation with {args.days} days, initial price ${args.initial_price}, drift ${args.drift}, and {args.volatility*100}% volatility...")
+
+    prices = simulate_timeseries(
+        days=args.days,
+        initial_price=args.initial_price,
+        drift=args.drift,
+        annualized_volatility=args.volatility
+    )
+
     df = calculate_drawdowns(prices)
     results = analyze_drawdown_probabilities(df)
 
