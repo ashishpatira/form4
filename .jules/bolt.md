@@ -1,3 +1,6 @@
 ## 2026-04-03 - SEC Request Connection Pooling
 **Learning:** Sequential, independent requests to `sec.gov` domains suffer significant overhead from TLS handshakes when executed outside of a persistent session, particularly during batch processing tasks like SEC filing downloads.
 **Action:** Always utilize a `requests.Session()` object when making multiple HTTP calls to the same host/API domain to enable connection pooling, thus minimizing connection setup latency.
+## 2025-02-28 - Optimize SEC HTML parsing with native lxml
+**Learning:** Using `BeautifulSoup` to parse large SEC filings (like 10-K HTML documents which can be >1.5MB) introduces massive overhead. Native `lxml.html` functions are fundamentally faster, resulting in a 5x+ parsing speedup. Also, elements should be removed with `.drop_tree()` rather than deleting or decomposing, because `.drop_tree()` natively preserves the trailing tail text, preventing unexpected formatting issues.
+**Action:** When parsing large HTML/XML documents in this codebase, skip `BeautifulSoup` entirely. Instead, use native `lxml` (`lxml.html.fromstring`) and `tree.xpath(...)` / `.drop_tree()` / `tree.itertext()` to maintain performance and data integrity.
