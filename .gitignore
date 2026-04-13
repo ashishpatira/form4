@@ -1,3 +1,4 @@
 .env
 __pycache__/
 sp500_keywords_batch_*.json
+.venv/
