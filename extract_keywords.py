@@ -7,7 +7,7 @@ import time
 from typing import List, Dict
 
 import requests
-from bs4 import BeautifulSoup
+import lxml.html
 import pandas as pd
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
@@ -143,14 +143,29 @@ def download_and_parse_filing(cik: str, filing_info: Dict) -> str:
         time.sleep(SEC_RATE_LIMIT_DELAY)
 
         # Parse HTML/XML and extract text
-        soup = BeautifulSoup(response.content, 'lxml')
-        # Remove script and style elements
-        for script in soup(['script', 'style']):
-            script.decompose()
+        # Use native lxml for significant performance improvement on large SEC filings
+        tree = lxml.html.fromstring(response.content)
 
-        text = soup.get_text(separator=' ', strip=True)
+        # Remove script and style elements, being careful to preserve tail text
+        for element in tree.xpath('//script | //style'):
+            if element.tail:
+                prev = element.getprevious()
+                if prev is not None:
+                    prev.tail = (prev.tail or '') + element.tail
+                else:
+                    parent = element.getparent()
+                    if parent is not None:
+                        parent.text = (parent.text or '') + element.tail
+
+            parent = element.getparent()
+            if parent is not None:
+                parent.remove(element)
+
+        # Extract text using itertext() to preserve spaces
+        text = ' '.join(tree.itertext())
+
         # Collapse multiple spaces
-        text = WHITESPACE_PATTERN.sub(' ', text)
+        text = WHITESPACE_PATTERN.sub(' ', text).strip()
 
         logger.info(f"Successfully downloaded and extracted {len(text)} characters.")
         return text
