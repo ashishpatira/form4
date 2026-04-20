@@ -7,7 +7,8 @@ import time
 from typing import List, Dict
 
 import requests
-from bs4 import BeautifulSoup
+import lxml.html
+import lxml.etree
 import pandas as pd
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
@@ -143,14 +144,13 @@ def download_and_parse_filing(cik: str, filing_info: Dict) -> str:
         time.sleep(SEC_RATE_LIMIT_DELAY)
 
         # Parse HTML/XML and extract text
-        soup = BeautifulSoup(response.content, 'lxml')
+        tree = lxml.html.fromstring(response.content)
         # Remove script and style elements
-        for script in soup(['script', 'style']):
-            script.decompose()
+        lxml.etree.strip_elements(tree, 'script', 'style', with_tail=False)
 
-        text = soup.get_text(separator=' ', strip=True)
+        text = ' '.join(tree.itertext())
         # Collapse multiple spaces
-        text = WHITESPACE_PATTERN.sub(' ', text)
+        text = WHITESPACE_PATTERN.sub(' ', text).strip()
 
         logger.info(f"Successfully downloaded and extracted {len(text)} characters.")
         return text
@@ -264,10 +264,13 @@ def main():
             logger.warning(f"No suitable filings found for {ticker}. Skipping.")
             continue
 
-        all_text = ""
+        text_parts = []
         for filing in filings:
             text = download_and_parse_filing(cik, filing)
-            all_text += text + "\n\n"
+            if text:
+                text_parts.append(text)
+
+        all_text = "\n\n".join(text_parts)
 
         if not all_text.strip():
             logger.warning(f"No text extracted for {ticker}. Skipping.")
