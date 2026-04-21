@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 
-def simulate_timeseries(days=5000, initial_price=100.0, drift=1.0, annualized_volatility=0.20):
+def simulate_timeseries(days=5000, initial_price=100.0, drift=0.1, annualized_volatility=0.20):
     """
     Simulates a daily timeseries for a given number of days.
 
-    Formula: Price[t] = Price[t-1] + drift + (Price[t-1] * random_normal(mean=0, std=annualized_volatility/sqrt(252)))
+    Formula: Price[t] = Price[t-1] * (1 + annual_drift/252 + random_normal(mean=0, std=annualized_volatility/sqrt(252)))
     """
     np.random.seed(42)  # For reproducibility
 
@@ -17,7 +17,7 @@ def simulate_timeseries(days=5000, initial_price=100.0, drift=1.0, annualized_vo
     noise = np.random.normal(0, daily_vol, days)
 
     for t in range(1, days + 1):
-        prices[t] = prices[t-1] + drift + (prices[t-1] * noise[t-1])
+        prices[t] = prices[t-1] * (drift/252 + 1 + noise[t-1])
         # Ensure price doesn't go negative, though highly unlikely with this drift and vol
         if prices[t] < 0:
             prices[t] = 0
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Simulate a timeseries and analyze drawdown probabilities.")
     parser.add_argument("--days", type=int, default=5000, help="Number of days to simulate (default: 5000).")
     parser.add_argument("--initial-price", type=float, default=100.0, help="Initial price on day 0 (default: 100.0).")
-    parser.add_argument("--drift", type=float, default=1.0, help="Average upward daily drift (default: 1.0).")
+    parser.add_argument("--drift", type=float, default=0.1, help="Average Annual drift (default: 0.1).")
     parser.add_argument("--volatility", type=float, default=0.20, help="Annualized volatility (default: 0.20).")
 
     args = parser.parse_args()
