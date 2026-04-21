@@ -19,7 +19,7 @@ pip install numpy pandas tabulate
 
 ## Usage
 
-You can run the script with its default parameters (5000 days, $100 initial price, $1 drift, 20% volatility) by simply executing:
+You can run the script with its default parameters (5000 days, $100 initial price, 0.1 drift, 20% volatility) by simply executing:
 
 ```bash
 python drawdown_analysis.py
