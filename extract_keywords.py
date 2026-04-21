@@ -264,10 +264,14 @@ def main():
             logger.warning(f"No suitable filings found for {ticker}. Skipping.")
             continue
 
-        all_text = ""
+        filing_texts = []
         for filing in filings:
             text = download_and_parse_filing(cik, filing)
-            all_text += text + "\n\n"
+            filing_texts.append(text)
+
+        all_text = "\n\n".join(filing_texts)
+        if all_text:
+            all_text += "\n\n"
 
         if not all_text.strip():
             logger.warning(f"No text extracted for {ticker}. Skipping.")
