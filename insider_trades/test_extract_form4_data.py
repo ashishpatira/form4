@@ -7,7 +7,7 @@ sys.modules["ratelimit"] = MagicMock()
 
 import pytest
 from datetime import date
-from form4_insider_trades.extract_form4_data import get_quarter
+from insider_trades.extract_form4_data import get_quarter
 
 @pytest.mark.parametrize("input_date, expected_quarter", [
     (date(2023, 1, 1), 1),
