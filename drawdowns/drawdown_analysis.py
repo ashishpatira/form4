@@ -16,13 +16,15 @@ def simulate_timeseries(days=5000, initial_price=100.0, drift=0.1, annualized_vo
     # Generate random noise for the whole timeseries at once
     noise = np.random.normal(0, daily_vol, days)
 
-    for t in range(1, days + 1):
-        prices[t] = prices[t-1] * (drift/252 + 1 + noise[t-1])
-        # Ensure price doesn't go negative, though highly unlikely with this drift and vol
-        if prices[t] < 0:
-            prices[t] = 0
+    # Vectorized computation instead of loop for performance
+    # Price[t] = Price[0] * cumprod(1 + drift/252 + noise[0...t-1])
+    multipliers = 1 + drift/252 + noise
+    prices[1:] = initial_price * np.cumprod(multipliers)
 
-    return prices
+    # Ensure price doesn't go negative, though highly unlikely with this drift and vol
+    # Applying at the end is functionally equivalent to step-by-step for realistic inputs
+    # and provides massive performance benefits over standard loops
+    return np.maximum(prices, 0)
 
 def calculate_drawdowns(prices):
     """
