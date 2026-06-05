@@ -10,17 +10,22 @@ def simulate_timeseries(days=5000, initial_price=100.0, drift=0.1, annualized_vo
     np.random.seed(42)  # For reproducibility
 
     daily_vol = annualized_volatility / np.sqrt(252)
-    prices = np.zeros(days + 1)
-    prices[0] = initial_price
-
     # Generate random noise for the whole timeseries at once
     noise = np.random.normal(0, daily_vol, days)
 
-    for t in range(1, days + 1):
-        prices[t] = prices[t-1] * (drift/252 + 1 + noise[t-1])
-        # Ensure price doesn't go negative, though highly unlikely with this drift and vol
-        if prices[t] < 0:
-            prices[t] = 0
+    # ⚡ Bolt optimization: Vectorize timeseries loop using np.cumprod
+    # Calculate all daily multipliers at once
+    multipliers = drift/252 + 1 + noise
+
+    prices = np.empty(days + 1)
+    prices[0] = initial_price
+
+    # Apply cumulative product to get price paths
+    prices[1:] = initial_price * np.cumprod(multipliers)
+
+    # Ensure price doesn't go negative, applying maximum at the end is functionally
+    # equivalent and significantly faster than step-by-step looping
+    prices = np.maximum(prices, 0)
 
     return prices
 
