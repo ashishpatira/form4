@@ -4,3 +4,7 @@
 ## 2026-04-03 - HTML Parsing and String Concatenation Bottlenecks
 **Learning:** `BeautifulSoup` causes severe performance bottlenecks when parsing large SEC filings. Furthermore, using `+=` for string concatenation inside a loop to build large strings (like combining multiple SEC filings) adds significant overhead compared to appending to a list and joining. Benchmarks for ~1MB strings show ~50% performance gain for list join pattern.
 **Action:** Use native `lxml` parsing (`lxml.html.fromstring`) with `lxml.etree.strip_elements` for faster HTML parsing of large documents. Use the `list.append()` and `str.join()` pattern instead of `+=` for building large strings.
+
+## 2026-04-03 - Vectorizing Timeseries Loops
+**Learning:** Standard Python `for` loops act as severe performance bottlenecks when used for time series simulation and numerical arrays.
+**Action:** Replace them with vectorized NumPy operations. Specifically, for random walks or cumulative growth, leverage `np.cumprod`, and applying `np.maximum(prices, 0)` at the end of the array provides significant performance gains and is functionally equivalent to step-by-step flooring for realistic inputs.
