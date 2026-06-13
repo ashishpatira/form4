@@ -10,19 +10,20 @@ def simulate_timeseries(days=5000, initial_price=100.0, drift=0.1, annualized_vo
     np.random.seed(42)  # For reproducibility
 
     daily_vol = annualized_volatility / np.sqrt(252)
-    prices = np.zeros(days + 1)
-    prices[0] = initial_price
 
     # Generate random noise for the whole timeseries at once
     noise = np.random.normal(0, daily_vol, days)
 
-    for t in range(1, days + 1):
-        prices[t] = prices[t-1] * (drift/252 + 1 + noise[t-1])
-        # Ensure price doesn't go negative, though highly unlikely with this drift and vol
-        if prices[t] < 0:
-            prices[t] = 0
+    # Vectorized calculation using np.cumprod avoids slow Python for loops
+    # Multipliers for each day: (drift/252 + 1 + noise)
+    multipliers = drift / 252 + 1 + noise
+    # Calculate cumulative product starting with initial_price
+    prices = np.concatenate(([initial_price], initial_price * np.cumprod(multipliers)))
 
-    return prices
+    # Ensure price doesn't go negative, though highly unlikely with this drift and vol.
+    # Applying np.maximum at the end is functionally equivalent to step-by-step
+    # flooring for realistic non-negative trajectories and is significantly faster.
+    return np.maximum(prices, 0)
 
 def calculate_drawdowns(prices):
     """
