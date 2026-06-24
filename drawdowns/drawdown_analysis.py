@@ -10,17 +10,23 @@ def simulate_timeseries(days=5000, initial_price=100.0, drift=0.1, annualized_vo
     np.random.seed(42)  # For reproducibility
 
     daily_vol = annualized_volatility / np.sqrt(252)
-    prices = np.zeros(days + 1)
-    prices[0] = initial_price
 
     # Generate random noise for the whole timeseries at once
     noise = np.random.normal(0, daily_vol, days)
 
-    for t in range(1, days + 1):
-        prices[t] = prices[t-1] * (drift/252 + 1 + noise[t-1])
-        # Ensure price doesn't go negative, though highly unlikely with this drift and vol
-        if prices[t] < 0:
-            prices[t] = 0
+    # Optimize performance: Vectorize timeseries simulation instead of iterative loops.
+    # We calculate daily multipliers. If a multiplier is <= 0, the price hits 0 and
+    # all subsequent prices remain 0 (bankruptcy).
+    multipliers = drift/252 + 1 + noise
+
+    # Strictly emulate the original loop's behavior where if price hits 0, it stays 0.
+    is_negative = multipliers <= 0
+    if np.any(is_negative):
+        first_neg_idx = np.argmax(is_negative)
+        multipliers[first_neg_idx:] = 0
+
+    multipliers = np.insert(multipliers, 0, 1.0)
+    prices = initial_price * np.cumprod(multipliers)
 
     return prices
 
