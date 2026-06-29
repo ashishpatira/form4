@@ -16,11 +16,18 @@ def simulate_timeseries(days=5000, initial_price=100.0, drift=0.1, annualized_vo
     # Generate random noise for the whole timeseries at once
     noise = np.random.normal(0, daily_vol, days)
 
-    for t in range(1, days + 1):
-        prices[t] = prices[t-1] * (drift/252 + 1 + noise[t-1])
-        # Ensure price doesn't go negative, though highly unlikely with this drift and vol
-        if prices[t] < 0:
-            prices[t] = 0
+    # Calculate daily multipliers
+    multipliers = drift/252 + 1 + noise
+
+    # Identify first boundary breach (price drops to 0 or below)
+    is_negative = multipliers <= 0
+    if np.any(is_negative):
+        # Zero out all subsequent multipliers to emulate absorbing barrier
+        first_negative_idx = np.argmax(is_negative)
+        multipliers[first_negative_idx:] = 0
+
+    # Calculate cumulative product to get prices over time
+    prices[1:] = initial_price * np.cumprod(multipliers)
 
     return prices
 
