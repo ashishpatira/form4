@@ -4,3 +4,6 @@
 ## 2026-04-03 - HTML Parsing and String Concatenation Bottlenecks
 **Learning:** `BeautifulSoup` causes severe performance bottlenecks when parsing large SEC filings. Furthermore, using `+=` for string concatenation inside a loop to build large strings (like combining multiple SEC filings) adds significant overhead compared to appending to a list and joining. Benchmarks for ~1MB strings show ~50% performance gain for list join pattern.
 **Action:** Use native `lxml` parsing (`lxml.html.fromstring`) with `lxml.etree.strip_elements` for faster HTML parsing of large documents. Use the `list.append()` and `str.join()` pattern instead of `+=` for building large strings.
+## 2026-04-03 - Vectorizing Timeseries Simulations with Absorbing Bounds
+**Learning:** When vectorizing timeseries simulation loops that enforce absorbing bounds (like flooring prices to 0 upon bankruptcy), simply applying a final `np.maximum` after `np.cumprod` introduces a mathematical regression because the internal series drops negative and recovers instead of absorbing at 0.
+**Action:** Instead, identify the first boundary breach (e.g., `is_negative = multipliers <= 0`) and zero out all subsequent multipliers before running `np.cumprod` to ensure correctness while achieving significant performance gains.
